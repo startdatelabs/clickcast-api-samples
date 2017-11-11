@@ -94,7 +94,7 @@ class CCApi {
     def token = opt.t
 
     // use live API?
-    def live = opt.l
+    def live = opt.l ?: true
 
     // return zero instead of null?
     def zeros = opt.z
@@ -260,9 +260,11 @@ class CCApi {
         break
       case 'stats':
       case 'stats-employer':
+        zeros = true
         (endpoint, fields, rparams) = setupEmployerStats(rparams)
         break
       case 'stats-publisher':
+        zeros = true
         (endpoint, fields, rparams) = setupPublisherStats(rparams)
         break
       default:
