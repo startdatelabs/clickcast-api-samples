@@ -119,8 +119,8 @@ class CCApi {
   def create(final def type, final def params, final def body) {
     if (isLive)
       error("Not allowed to create on live API!")
-    if (!'campaign'.equals(type))
-      error("Only support create campaign!")
+
+    error("Not implemented yet!")
 
   }
 
@@ -364,6 +364,7 @@ class CCApi {
         break
       default:
         error("Unknown cmd: ${cmd}")
+        break
     }
   }
 
