@@ -29,8 +29,8 @@ The CCApi app accepts a command-line with the following format:
 groovy CCApi.groovy -t TOKEN command type params
 ```
 
-
 Here are the valid combinations of command and type:
+
 | Command | Type | Params | Description |
 | --- | --- | --- | --- |
 | create | campaign | | Create one campaign |
@@ -47,7 +47,6 @@ Here are the valid combinations of command and type:
 | | stats-publisher | publisher_id=X | Read stats for one publisher |
 | update | budgets | campaign_id=X | Update budgets for one campaign |
 |  | campaign | campaign_id=X | Update one campaign |
-
 
 #### Examples
 
