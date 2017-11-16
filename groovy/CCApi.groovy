@@ -94,7 +94,7 @@ class CCApi {
     def token = opt.t
 
     // use live API?
-    def live = opt.l ?: true
+    def live = opt.l
 
     // return zero instead of null?
     def zeros = opt.z
