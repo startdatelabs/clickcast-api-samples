@@ -2,11 +2,10 @@ import './polyfills'
 
 import * as commander from 'commander'
 
-import { Table } from 'cli-table2'
 import axios from 'axios'
 import chalk from 'chalk'
 
-declare var Table: any;
+const Table = require('easy-table');
 
 // our global token
 var token: string;
@@ -14,6 +13,32 @@ var token: string;
 var params = new Map<string, any>();
 // live API
 var baseURL = 'https://api.clickcast.cloud/clickcast';
+
+// default fields for types
+const BUDGET_FIELDS: string[] = [
+  'budget_id',
+  'enabled',
+  'campaign_name',
+  'campaign_id',
+  'publisher_name',
+  'publisher_id',
+  'cpc',
+  'cpa'
+];
+const CAMPAIGN_FIELDS: string[] = [
+  'campaign_name',
+  'campaign_id',
+  'employer_name',
+  'employer_id',
+  'status',
+  'priority'
+];
+const EMPLOYER_FIELDS: string[] = [
+  'employer_name',
+  'employer_id',
+  'status',
+  'api_managed'
+];
 
 commander
   .command('read <type> [options...]')
@@ -25,6 +50,31 @@ commander
     read(type);
   });
 commander.parse(process.argv);
+
+function error(message: string) {
+  console.log(chalk.red(`ERROR: ${message}`));
+  process.exit();
+}
+
+function getFields(fields: string[]) {
+  if (params.has('fields')) {
+    const flds = params.get('fields')
+    params.delete('fields');
+    return flds;
+  }
+  else
+    return fields;
+}
+
+function getParam(key: string) {
+  if (params.has(key)) {
+    const val = params.get(key);
+    params.delete(key);
+    return val;
+  }
+  else
+    return undefined;
+}
 
 function processOptions(options: string[]) {
   options.forEach((opt: string) => {
@@ -47,10 +97,8 @@ function processOptions(options: string[]) {
     }
   });
   // must have token!
-  if (token == null) {
-    console.log(chalk.red('Must specify token!'));
-    process.exit();
-  }
+  if (token == null)
+    error("Must pass token=ABC on command line.");
   // DEBUG
   console.log(chalk.yellow('token: %s'), token);
   params.forEach((value: any, key: string) => {
@@ -61,9 +109,29 @@ function processOptions(options: string[]) {
 function read(type: string) {
   console.log(chalk.green('read -- type: %s'), type)
   var endpoint: string = '';
+  var fields: string[] = [];
   switch (type) {
+    case 'budgets': {
+      const campaignId = getParam('campaign_id');
+      if (campaignId)
+        endpoint = `/api/campaign/${campaignId}/budgets`
+      else
+        error('budgets requires campaign_id parameter');
+      fields = getFields(BUDGET_FIELDS);
+      break;
+    }
+    case 'campaigns': {
+      const employerId = getParam('employer_id');
+      if (employerId)
+        endpoint = `/api/employer/${employerId}/campaigns`;
+      else
+        endpoint = '/api/campaigns'
+      fields = getFields(CAMPAIGN_FIELDS);
+      break;
+    }
     case 'employers': {
       endpoint = '/api/employers';
+      fields = getFields(EMPLOYER_FIELDS);
       break;
     }
     default: {
@@ -72,21 +140,20 @@ function read(type: string) {
     }
   }
 
-  readEntities(endpoint);
+  readEntities(endpoint, fields);
 }
 
-function readEntities(endpoint: string) {
-  var table = new Table({
-      head: ['Employer ID', 'Employer Name'],
-      colWidths: [100, 100]
-  });
+function readEntities(endpoint: string, fields: string[]) {
+  var table = new Table;
   var promise = request('get', endpoint);
   promise
     .then((results) => {
       console.log(chalk.red('Results: total: %s, num_pages: %s, page: %s'), results.count, results.num_pages, results.page);
       results.results.forEach((entity: any) => {
-        // console.log('id: %s, name: %s', entity.employer_id, entity.employer_name);
-        table.push([entity.employer_id, entity.employer_name]);
+        fields.forEach((fld: string) => {
+          table.cell(fld, entity[fld]);
+        });
+        table.newRow()
       });
       console.log(table.toString());
     })
