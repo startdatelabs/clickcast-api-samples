@@ -40,6 +40,7 @@ const EMPLOYER_FIELDS: string[] = [
   'api_managed'
 ];
 
+// define cli entry points
 commander
   .command('read <type> [options...]')
   .alias('r')
@@ -163,11 +164,23 @@ function readEntities(endpoint: string, fields: string[]) {
 }
 
 function request(method: string, endpoint: string): Promise<any> {
+  var qparams: any = {};
   var results: any[] = [];
+
+  // build up parameters for request
+  params.forEach((value: any, key: string) => {
+    if (value instanceof Array)
+      qparams[key] = value.join(',');
+    else
+      qparams[key] = value;
+  });
+
+  // make request
   return new Promise((resolve, reject) => {
     axios({
       method: method,
-      url: endpoint
+      url: endpoint,
+      params: qparams
     })
     .then((response: any) => {
       resolve(response.data);
