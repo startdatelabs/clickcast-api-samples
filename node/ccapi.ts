@@ -2,9 +2,11 @@ import './polyfills'
 
 import * as commander from 'commander'
 
-import { HorizontalTable } from 'cli-table2'
+import { Table } from 'cli-table2'
 import axios from 'axios'
 import chalk from 'chalk'
+
+declare var Table: any;
 
 // our global token
 var token: string;
@@ -74,19 +76,23 @@ function read(type: string) {
 }
 
 function readEntities(endpoint: string) {
-  var promise = request('get', endpoint);
-  promise.then((results) => {
-    console.log(chalk.red('Results: total: %s, num_pages: %s, page: %s'), results.count, results.num_pages, results.page);
-    const table = new HorizontalTable({
-        head: ['Employer ID', 'Employer Name'],
-        colWidths: [10, 100]
-    });
-    results.results.forEach((entity: any) => {
-      // console.log('id: %s, name: %s', entity.employer_id, entity.employer_name);
-      table.push([entity.employer_id, entity.employer_name]);
-    });
-    console.log(table.toString());
+  var table = new Table({
+      head: ['Employer ID', 'Employer Name'],
+      colWidths: [100, 100]
   });
+  var promise = request('get', endpoint);
+  promise
+    .then((results) => {
+      console.log(chalk.red('Results: total: %s, num_pages: %s, page: %s'), results.count, results.num_pages, results.page);
+      results.results.forEach((entity: any) => {
+        // console.log('id: %s, name: %s', entity.employer_id, entity.employer_name);
+        table.push([entity.employer_id, entity.employer_name]);
+      });
+      console.log(table.toString());
+    })
+    .catch((error: any) => {
+      console.log(error);
+    });
 }
 
 function request(method: string, endpoint: string): Promise<any> {
