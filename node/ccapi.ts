@@ -4,12 +4,13 @@ import * as commander from 'commander'
 
 import axios from 'axios'
 import chalk from 'chalk'
+import token from './token'
 
 const Table = require('easy-table');
 
-// our global token
-var token: string;
-// map of other params
+// our token
+var theToken: string = token;
+// map of other params from command line
 var params = new Map<string, any>();
 // live API
 var baseURL = 'https://api.clickcast.cloud/clickcast';
@@ -86,8 +87,9 @@ function processOptions(options: string[]) {
     }
     var key = parts[0];
     var value = parts[1];
+    // look for well known params
     if ((key == "token") || (key == "t"))
-      token = value;
+      theToken = value;
     else {
       if (value.includes(","))
         params.set(key, value.split("^"));
@@ -98,10 +100,10 @@ function processOptions(options: string[]) {
     }
   });
   // must have token!
-  if (token == null)
-    error("Must pass token=ABC on command line.");
+  if (!theToken)
+    error("Must pass token on command line or add it to token.ts.");
   // DEBUG
-  console.log(chalk.yellow('token: %s'), token);
+  console.log(chalk.yellow('token: %s'), theToken);
   params.forEach((value: any, key: string) => {
     console.log(chalk.yellow('param: key: %s, value: %s'), key, value);
   });
